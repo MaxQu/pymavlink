@@ -379,6 +379,15 @@ enums['MAV_CMD'][115].param[4] = '''relative offset or absolute angle: [ 1,0]'''
 enums['MAV_CMD'][115].param[5] = '''Empty'''
 enums['MAV_CMD'][115].param[6] = '''Empty'''
 enums['MAV_CMD'][115].param[7] = '''Empty'''
+MAV_CMD_CONDITION_YAW_RATE = 116 # Reach a certain target angle.
+enums['MAV_CMD'][116] = EnumEntry('MAV_CMD_CONDITION_YAW_RATE', '''Reach a certain target angle rate.''')
+enums['MAV_CMD'][116].param[1] = '''target angle: [0-360], 0 is north'''
+enums['MAV_CMD'][116].param[2] = '''speed during yaw change:[deg per second]'''
+enums['MAV_CMD'][116].param[3] = '''direction: negative: counter clockwise, positive: clockwise [-1,1]'''
+enums['MAV_CMD'][116].param[4] = '''relative offset or absolute angle: [ 1,0]'''
+enums['MAV_CMD'][116].param[5] = '''Empty'''
+enums['MAV_CMD'][116].param[6] = '''Empty'''
+enums['MAV_CMD'][116].param[7] = '''Empty'''
 MAV_CMD_CONDITION_LAST = 159 # NOP - This command is only used to mark the upper limit of the
                         # CONDITION commands in the enumeration
 enums['MAV_CMD'][159] = EnumEntry('MAV_CMD_CONDITION_LAST', '''NOP - This command is only used to mark the upper limit of the CONDITION commands in the enumeration''')
@@ -2083,6 +2092,7 @@ MAVLINK_MSG_ID_VFR_HUD = 74
 MAVLINK_MSG_ID_COMMAND_INT = 75
 MAVLINK_MSG_ID_COMMAND_LONG = 76
 MAVLINK_MSG_ID_COMMAND_ACK = 77
+MAVLINK_MSG_ID_GCS_GESTURE_YPR_LOCAL_BF=80
 MAVLINK_MSG_ID_MANUAL_SETPOINT = 81
 MAVLINK_MSG_ID_SET_ATTITUDE_TARGET = 82
 MAVLINK_MSG_ID_ATTITUDE_TARGET = 83
@@ -5542,6 +5552,53 @@ class MAVLink_set_position_target_local_ned_message(MAVLink_message):
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 143, struct.pack('<IfffffffffffHBBB', self.time_boot_ms, self.x, self.y, self.z, self.vx, self.vy, self.vz, self.afx, self.afy, self.afz, self.yaw, self.yaw_rate, self.type_mask, self.target_system, self.target_component, self.coordinate_frame))
 
+class MAVLink_gcs_gesture_ypr_local_bf_message(MAVLink_message):
+        '''
+        Provide gcs's yaw pitch roll angles in
+        gcs local body frame.
+
+        '''
+        id = MAVLINK_MSG_ID_GCS_GESTURE_YPR_LOCAL_BF
+        name = 'GCS_GESTURE_YPR_LOCAL_BF'
+        fieldnames = ['time_boot_ms', 'target_system', 'target_component', 'coordinate_frame', 'type_mask', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'afx', 'afy', 'afz', 'lyaw', 'lpitch', 'lroll', 'yaw', 'pitch', 'roll', 'vyaw', 'vpitch', 'vroll']
+        ordered_fieldnames = [ 'time_boot_ms', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'afx', 'afy', 'afz', 'lyaw', 'lpitch', 'lroll', 'yaw', 'pitch','roll','vyaw','vpitch','vroll', 'type_mask', 'target_system', 'target_component', 'coordinate_frame']
+        format = '<IffffffffffffffffffHBBB'
+        native_format = bytearray('<IffffffffffffffffffHBBB', 'ascii')
+        orders = [0, 20, 21, 22, 19, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+        lengths = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        array_lengths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        crc_extra = 105
+
+        def __init__(self, time_boot_ms, target_system, target_component, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, lyaw, lpitch, lroll, yaw, pitch, roll, vyaw, vpitch, vroll):
+                MAVLink_message.__init__(self, MAVLink_gcs_gesture_ypr_local_bf_message.id, MAVLink_gcs_gesture_ypr_local_bf_message.name)
+                self._fieldnames = MAVLink_gcs_gesture_ypr_local_bf_message.fieldnames
+                self.time_boot_ms = time_boot_ms
+                self.target_system = target_system
+                self.target_component = target_component
+                self.coordinate_frame = coordinate_frame
+                self.type_mask = type_mask
+                self.x = x
+                self.y = y
+                self.z = z
+                self.vx = vx
+                self.vy = vy
+                self.vz = vz
+                self.afx = afx
+                self.afy = afy
+                self.afz = afz
+                self.lyaw = lyaw
+                self.lpitch = lpitch
+                self.lroll = lroll
+                self.yaw = yaw
+                self.pitch = pitch
+                self.roll = roll
+                self.vyaw = vyaw
+                self.vpitch = vpitch
+                self.vroll = vroll
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 105, struct.pack('<IffffffffffffffffffHBBB', self.time_boot_ms, self.x, self.y, self.z, self.vx, self.vy, self.vz, self.afx, self.afy, self.afz, self.lyaw, self.lpitch, self.lroll, self.yaw, self.pitch, self.roll, self.vyaw, self.vpitch, self.vroll, self.type_mask, self.target_system, self.target_component, self.coordinate_frame))
+
 class MAVLink_position_target_local_ned_message(MAVLink_message):
         '''
         Set vehicle position, velocity and acceleration setpoint in
@@ -7728,6 +7785,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_NAMED_VALUE_INT : MAVLink_named_value_int_message,
         MAVLINK_MSG_ID_STATUSTEXT : MAVLink_statustext_message,
         MAVLINK_MSG_ID_DEBUG : MAVLink_debug_message,
+        MAVLINK_MSG_ID_GCS_GESTURE_YPR_LOCAL_BF: MAVLink_gcs_gesture_ypr_local_bf_message,
 }
 
 class MAVError(Exception):
@@ -11621,6 +11679,72 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.set_position_target_local_ned_encode(time_boot_ms, target_system, target_component, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, yaw, yaw_rate))
+
+        def gcs_gesture_ypr_bf_encode(self, time_boot_ms, target_system, target_component, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, lyaw, lpitch, lroll, yaw, pitch, roll, vyaw, vpitch, vroll):
+                '''
+                Set vehicle position, velocity and acceleration setpoint in local
+                frame.
+
+                time_boot_ms              : Timestamp in milliseconds since system boot (uint32_t)
+                target_system             : System ID (uint8_t)
+                target_component          : Component ID (uint8_t)
+                coordinate_frame          : Valid options are: MAV_FRAME_LOCAL_NED = 1, MAV_FRAME_LOCAL_OFFSET_NED = 7, MAV_FRAME_BODY_NED = 8, MAV_FRAME_BODY_OFFSET_NED = 9 (uint8_t)
+                type_mask                 : Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate (uint16_t)
+                x                         : X Position in NED frame in meters (float)
+                y                         : Y Position in NED frame in meters (float)
+                z                         : Z Position in NED frame in meters (note, altitude is negative in NED) (float)
+                vx                        : X velocity in NED frame in meter / s (float)
+                vy                        : Y velocity in NED frame in meter / s (float)
+                vz                        : Z velocity in NED frame in meter / s (float)
+                afx                       : X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N (float)
+                afy                       : Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N (float)
+                afz                       : Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N (float)
+                lyaw                      : lock yaw position in rad (float)
+                lpitch                      : lock pitch position in rad (float)
+                lroll                      : lock roll position in rad (float)
+                yaw                       : yaw position in rad (float)
+                pitch                       : pitch position in rad (float)
+                roll                       : roll position in rad (float)
+                vyaw                       : yaw rate in rad/sec (float)
+                vpitch                       : pitch rate in rad/sec (float)
+                vroll                       : roll rate in rad/sec (float)
+
+                '''
+                return MAVLink_gcs_gesture_ypr_local_bf_message(time_boot_ms, target_system, target_component, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, lyaw, lpitch, lroll, yaw, pitch, roll, vyaw, vpitch, vroll)
+
+
+        def gcs_gesture_ypr_bf_send(self, time_boot_ms, target_system, target_component, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, lyaw, lpitch, lroll, yaw, pitch, roll, vyaw, vpitch, vroll):
+                '''
+                Set vehicle position, velocity and acceleration setpoint in local
+                frame.
+
+                time_boot_ms              : Timestamp in milliseconds since system boot (uint32_t)
+                target_system             : System ID (uint8_t)
+                target_component          : Component ID (uint8_t)
+                coordinate_frame          : Valid options are: MAV_FRAME_LOCAL_NED = 1, MAV_FRAME_LOCAL_OFFSET_NED = 7, MAV_FRAME_BODY_NED = 8, MAV_FRAME_BODY_OFFSET_NED = 9 (uint8_t)
+                type_mask                 : Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate (uint16_t)
+                x                         : X Position in NED frame in meters (float)
+                y                         : Y Position in NED frame in meters (float)
+                z                         : Z Position in NED frame in meters (note, altitude is negative in NED) (float)
+                vx                        : X velocity in NED frame in meter / s (float)
+                vy                        : Y velocity in NED frame in meter / s (float)
+                vz                        : Z velocity in NED frame in meter / s (float)
+                afx                       : X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N (float)
+                afy                       : Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N (float)
+                afz                       : Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N (float)
+                lyaw                      : lock yaw position in rad (float)
+                lpitch                      : lock pitch position in rad (float)
+                lroll                      : lock roll position in rad (float)
+                yaw                       : yaw position in rad (float)
+                pitch                       : pitch position in rad (float)
+                roll                       : roll position in rad (float)
+                vyaw                       : yaw rate in rad/sec (float)
+                vpitch                       : pitch rate in rad/sec (float)
+                vroll                       : roll rate in rad/sec (float)
+
+                '''
+                return self.send(self.gcs_gesture_ypr_bf_encode(time_boot_ms, target_system, target_component, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, lyaw, lpitch, lroll, yaw, pitch, roll, vyaw, vpitch, vroll))
+
 
         def position_target_local_ned_encode(self, time_boot_ms, coordinate_frame, type_mask, x, y, z, vx, vy, vz, afx, afy, afz, yaw, yaw_rate):
                 '''
